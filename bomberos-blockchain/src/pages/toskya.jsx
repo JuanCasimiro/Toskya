@@ -63,27 +63,43 @@ const cartReducer = (state, action) => {
 const menuData = [
   {
     id: 1,
-    name: "Classic Burger",
-    description: "Juicy beef patty with fresh lettuce and tomatoes",
-    price: 12.99,
+    name: "Toskya clasica",
+    description: "Hamburguesa ahumada con doble chaddar en pan de papa",
+    price: 7500,
     category: "Classic Burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
+    image: "https://lh3.google.com/u/0/d/1Q__nokW8U57M0UnvCzKx1PbATDyXbQvd=w1920-h933-iv1?auditContext=forDisplay"
   },
   {
     id: 2,
-    name: "Signature BBQ",
-    description: "House special with smoky BBQ sauce and crispy onions",
-    price: 15.99,
+    name: "Fresh Toskya",
+    description: "Hamburguesa ahumada con salsa tasty, cebolla, lechuga, tomate y en pan de papa",
+    price: 8300,
     category: "Signature Burgers",
-    image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90"
+    image: "https://lh3.google.com/u/0/d/1Hi6b0MXAgmlPolJHyZNNiCi6iZUJHLhU=w1920-h933-iv1?auditContext=forDisplay"
   },
   {
     id: 3,
-    name: "Veggie Delight",
-    description: "Plant-based patty with grilled vegetables",
-    price: 13.99,
-    category: "Vegetarian Options",
+    name: "Smoky Bacon Jam",
+    description: "Hamburguesa ahumada con mermelada de bacon, cheddar, cebolla caramelizada y en pan de papa",
+    price: 8600,
+    category: "Signature Burgers",
+    image: "https://lh3.google.com/u/0/d/1w-7jHdLHdz7DS6YQZhxoOO_pmhOhQBQU=w2000-h2228-iv1?auditContext=forDisplay"
+  },
+  {
+    id: 4,
+    name: "La Slider",
+    description: "Combo degustacion en version simple de nuestras 3 hamburguesas mas populares",
+    price: 10500,
+    category: "Signature Burgers",
     image: "https://images.unsplash.com/photo-1520072959219-c595dc870360"
+  },
+  {
+    id: 5,
+    name: "La Azuleña",
+    description: "Hamburgueza ahumada con queso azul y salsa golf en pan de papa",
+    price: 8500,
+    category: "Signature Burgers",
+    image: "https://lh3.google.com/u/0/d/1pos2_z9Anh1U0L29id0moA2dhTZ0mz2S=w2000-h2228-iv1?auditContext=forDisplay"
   }
 ];
 

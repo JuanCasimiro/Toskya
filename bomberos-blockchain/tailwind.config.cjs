@@ -20,8 +20,8 @@ module.exports = {
         background: "#FAFAFB",
         foreground: "#020817",
         card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#020817"
+          DEFAULT: "#F0F1F3", // Cambié el fondo de la card a un tono más claro
+          foreground: "#020817" // Aseguramos que el texto de la card sea oscuro para contraste
         },
         popover: {
           DEFAULT: "#FFFFFF",
