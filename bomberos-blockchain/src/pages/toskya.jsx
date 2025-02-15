@@ -11,45 +11,47 @@ const initialState = {
 const cartReducer = (state, action) => {
   switch (action.type) {
     case "ADD_ITEM":
-      const existingItem = state.items.find(item => item.id === action.payload.id);
+      const existingItem = state.items.find(item => 
+        item.id === action.payload.id && item.size === action.payload.size
+      );
       if (existingItem) {
         return {
           ...state,
           items: state.items.map(item =>
-            item.id === action.payload.id
+            item.id === action.payload.id && item.size === action.payload.size
               ? { ...item, quantity: item.quantity + 1 }
               : item
           ),
-          total: state.total + action.payload.price
+          total: state.total + (action.payload.price * action.payload.sizeMultiplier)
         };
       }
       return {
         ...state,
         items: [...state.items, { ...action.payload, quantity: 1 }],
-        total: state.total + action.payload.price
+        total: state.total + (action.payload.price * action.payload.sizeMultiplier)
       };
 
     case "REMOVE_ITEM":
-      const itemToRemove = state.items.find(item => item.id === action.payload);
+      const itemToRemove = state.items.find(item => item.uniqueId === action.payload);
       return {
         ...state,
-        items: state.items.filter(item => item.id !== action.payload),
-        total: state.total - (itemToRemove.price * itemToRemove.quantity)
+        items: state.items.filter(item => item.uniqueId !== action.payload),
+        total: state.total - (itemToRemove.price * itemToRemove.sizeMultiplier * itemToRemove.quantity)
       };
 
     case "UPDATE_QUANTITY":
       return {
         ...state,
         items: state.items.map(item =>
-          item.id === action.payload.id
+          item.uniqueId === action.payload.uniqueId
             ? { ...item, quantity: action.payload.quantity }
             : item
         ),
         total: state.items.reduce((acc, item) => {
-          if (item.id === action.payload.id) {
-            return acc + (item.price * action.payload.quantity);
+          if (item.uniqueId === action.payload.uniqueId) {
+            return acc + (item.price * item.sizeMultiplier * action.payload.quantity);
           }
-          return acc + (item.price * item.quantity);
+          return acc + (item.price * item.sizeMultiplier * item.quantity);
         }, 0)
       };
 
@@ -109,28 +111,61 @@ const HeroSection = () => (
   </div>
 );
 
-const ProductCard = ({ product, addToCart }) => (
-  <div className="bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-200 hover:border-primary transition-all duration-300">
-    <img
-      src={product.image}
-      alt={product.name}
-      className="w-full h-48 object-cover"
-    />
-    <div className="p-4">
-      <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-      <p className="text-accent mb-4">{product.description}</p>
-      <div className="flex justify-between items-center">
-        <span className="text-lg font-bold">${product.price}</span>
-        <button
-          onClick={() => addToCart(product)}
-          className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-all"
-        >
-          Add to Cart
-        </button>
+const ProductCard = ({ product, addToCart }) => {
+  const [selectedSize, setSelectedSize] = useState("simple");
+  
+  const sizeMultipliers = {
+    simple: 1,
+    doble: 1.13,
+    triple: 2.25
+  };
+
+  const handleAddToCart = () => {
+    const uniqueId = `${product.id}-${selectedSize}`;
+    addToCart({
+      ...product,
+      uniqueId,
+      size: selectedSize,
+      sizeMultiplier: sizeMultipliers[selectedSize]
+    });
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-200 hover:border-primary transition-all duration-300">
+      <img
+        src={product.image}
+        alt={product.name}
+        className="w-full h-48 object-cover"
+      />
+      <div className="p-4">
+        <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
+        <p className="text-accent mb-4">{product.description}</p>
+        <div className="mb-4">
+          <select
+            value={selectedSize}
+            onChange={(e) => setSelectedSize(e.target.value)}
+            className="w-full p-2 border rounded-lg mb-2 text-gray-800"
+          >
+            <option value="simple">Simple</option>
+            <option value="doble">Doble</option>
+            <option value="triple">Triple</option>
+          </select>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-bold">
+            ${(product.price * sizeMultipliers[selectedSize]).toFixed(2)}
+          </span>
+          <button
+            onClick={handleAddToCart}
+            className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-all"
+          >
+            Add to Cart
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Cart = () => {
   const { state, dispatch } = useContext(CartContext);
@@ -138,17 +173,20 @@ const Cart = () => {
 
   const handleCheckout = () => {
     if (state.items.length === 0) return;
-
+  
     const orderDetails = state.items
-      .map(item => `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}`)
+      .map(item => 
+        `${item.quantity}x ${item.name} (${item.size}) - $${(item.price * item.sizeMultiplier * item.quantity).toFixed(2)}`
+      )
       .join("\n");
-
+  
     const total = `Total: $${state.total.toFixed(2)}`;
     const message = encodeURIComponent(`Hola, quiero hacer un pedido:\n\n${orderDetails}\n\n${total}`);
     
     const whatsappUrl = `https://wa.me/5492281378685?text=${message}`;
     window.open(whatsappUrl, "_blank");
   };
+  
 
   return (
     <div className="relative">
@@ -188,7 +226,7 @@ const Cart = () => {
             ) : (
               <>
                 {state.items.map(item => (
-                  <div key={item.id} className="flex items-center mb-4 border-b pb-4 hover:bg-gray-50 transition-colors duration-200 p-2 rounded-lg">
+                  <div key={item.uniqueId} className="flex items-center mb-4 border-b pb-4 hover:bg-gray-50 transition-colors duration-200 p-2 rounded-lg">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -196,12 +234,13 @@ const Cart = () => {
                     />
                     <div className="ml-4 flex-1">
                       <h3 className="font-semibold text-gray-800">{item.name}</h3>
+                      <p className="text-sm text-gray-600 capitalize">{item.size}</p>
                       <div className="flex items-center mt-2 bg-gray-100 rounded-lg inline-flex">
                         <button
                           onClick={() =>
                             dispatch({
                               type: "UPDATE_QUANTITY",
-                              payload: { id: item.id, quantity: item.quantity - 1 }
+                              payload: { uniqueId: item.uniqueId, quantity: item.quantity - 1 }
                             })
                           }
                           className="bg-gray-200 px-3 py-1 rounded-l-lg hover:bg-gray-300 transition-colors"
@@ -214,7 +253,7 @@ const Cart = () => {
                           onClick={() =>
                             dispatch({
                               type: "UPDATE_QUANTITY",
-                              payload: { id: item.id, quantity: item.quantity + 1 }
+                              payload: { uniqueId: item.uniqueId, quantity: item.quantity + 1 }
                             })
                           }
                           className="bg-gray-200 px-3 py-1 rounded-r-lg hover:bg-gray-300 transition-colors"
@@ -224,10 +263,10 @@ const Cart = () => {
                       </div>
                     </div>
                     <div className="ml-4 text-right">
-                      <p className="font-bold text-gray-800">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-bold text-gray-800">${(item.price * item.sizeMultiplier * item.quantity).toFixed(2)}</p>
                       <button
                         onClick={() =>
-                          dispatch({ type: "REMOVE_ITEM", payload: item.id })
+                          dispatch({ type: "REMOVE_ITEM", payload: item.uniqueId })
                         }
                         className="text-destructive mt-2 hover:text-destructive/80 transition-colors"
                       >
